@@ -1,0 +1,59 @@
+ProgressDialog progressDialog;
+RequestQueue requestQueue;
+String HttpURI = "http://192.168.1.80/projectws/compare_face.php";
+
+en el on create 
+// inicializamos a requestQueue
+requestQueue = Volley.newRequestQueue(MainActivity.this);
+progressDialog = new ProgressDialog(MainActivity.this);
+
+
+
+
+private void acceder() {
+        // mostramos el progresDialog
+        progressDialog.setMessage("Procesando...");
+        progressDialog.show();
+        // creacion de la cadea a ejecutar en el web service mediante Volley
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, HttpURI,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String serverResponse) {
+                        // oculatamos el progressDialog
+                        progressDialog.dismiss();
+
+                        try{
+                            JSONObject obj = new JSONObject(serverResponse);
+                            Boolean error = obj.getBoolean("error");
+                            String mensaje = obj.getString("mensaje");
+                            
+                            if(error == true)
+                                Toast.makeText(getApplicationContext(),mensaje,
+                                        Toast.LENGTH_LONG).show();
+                            else{
+                                tvPadecimiento.setText(obj.getString("suffering"));
+                                tvMedicamento.setText(obj.getString("medicine"));
+                                tvIndicaciones.setText(obj.getString("indications"));
+                                tvNombreClinica.setText(obj.getString("name_clinic"));
+                                tvNotas.setText(obj.getString("note"));
+
+                                Toast.makeText(getApplicationContext(),"ENCONTRADO", Toast.LENGTH_SHORT).show();
+    
+                            }
+                        }catch (JSONException e){
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // oculatamos el progressDialog
+                        progressDialog.dismiss();
+                        Toast.makeText(getApplicationContext(),error.toString(),
+                                Toast.LENGTH_LONG).show();
+                    }
+                })
+        };
+        requestQueue.add(stringRequest);
+    }
